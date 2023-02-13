@@ -1,0 +1,43 @@
+---
+- name: Generate public key
+  hosts: localhost
+  gather_facts: no
+  tasks:
+  - name: Create RSA key pair
+    shell: ssh-keygen -t rsa -b 2048 -f ~/.ssh/id_rsa -q -N ""
+    args:
+      creates: ~/.ssh/id_rsa.pub
+
+- name: Add SSH key to all VMs
+  hosts: all
+  gather_facts: no
+  vars_prompt:
+    - name: "username"
+      prompt: "Enter username"
+      private: no
+    - name: "password"
+      prompt: "Enter password"
+      private: yes
+
+  tasks:
+  - name: Add public key to authorized_keys
+    authorized_key:
+      user: "{{ username }}"
+      key: "{{ lookup('file', '/path/to/public_key') }}"
+      password: "{{ password }}"
+
+  - name: Create .ssh directory if it does not exist
+    file:
+      path: "/home/{{ username }}/.ssh"
+      state: directory
+      owner: "{{ username }}"
+      group: "{{ username }}"
+      mode: 0700
+
+  - name: Copy public key to .ssh directory
+    copy:
+      src: "/path/to/public_key"
+      dest: "/home/{{ username }}/.ssh/authorized_keys"
+      owner: "{{ username }}"
+      group: "{{ username }}"
+      mode: 0600

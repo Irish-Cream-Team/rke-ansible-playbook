@@ -1,0 +1,51 @@
+---
+- hosts: nodes
+  become: true
+  tasks:
+    - name: Install aptitude
+      apt:
+        name: aptitude
+        state: latest
+        update_cache: true
+
+    - name: Install required system packages
+      apt:
+        pkg:
+        - apt-transport-https
+        - ca-certificates
+        - curl
+        - software-properties-common
+        - python3-pip
+        - virtualenv
+        - python3-setuptools
+        state: latest
+        update_cache: true
+
+    - name: Add Docker GPG apt Key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add Docker Repository
+      apt_repository:
+        repo: deb https://download.docker.com/linux/ubuntu bionic stable
+        state: present
+
+    - name: Update apt and install docker-ce
+      apt:
+        name: docker-ce=18.06.3~ce~3-0~ubuntu
+        state: present
+        update_cache: true
+        force: yes
+        
+    - name: Start Docker service
+      service:
+        name: docker
+        state: started
+        enabled: yes
+        
+    - name: Add adminz user to Docker group
+      user:
+        name: adminz
+        groups: docker
+        append: yes

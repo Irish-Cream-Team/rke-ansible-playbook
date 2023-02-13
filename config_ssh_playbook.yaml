@@ -1,3 +1,4 @@
+
 ---
 - name: Generate public key
   hosts: localhost
@@ -9,7 +10,7 @@
       creates: ~/.ssh/id_rsa.pub
 
 - name: Add SSH key to all VMs
-  hosts: all
+  hosts: localhost
   gather_facts: no
   vars_prompt:
     - name: "username"
@@ -18,26 +19,9 @@
     - name: "password"
       prompt: "Enter password"
       private: yes
-
+  vars:
+    file_info: "{{ lookup ('file', '/tmp/init/hosts').splitlines() }}"
   tasks:
-  - name: Add public key to authorized_keys
-    authorized_key:
-      user: "{{ username }}"
-      key: "{{ lookup('file', '/path/to/public_key') }}"
-      password: "{{ password }}"
-
-  - name: Create .ssh directory if it does not exist
-    file:
-      path: "/home/{{ username }}/.ssh"
-      state: directory
-      owner: "{{ username }}"
-      group: "{{ username }}"
-      mode: 0700
-
-  - name: Copy public key to .ssh directory
-    copy:
-      src: "/path/to/public_key"
-      dest: "/home/{{ username }}/.ssh/authorized_keys"
-      owner: "{{ username }}"
-      group: "{{ username }}"
-      mode: 0600
+  - name:  Add SSH key to all VMs
+    command: sshpass -p "{{ password }}" ssh-copy-id -i ~/.ssh/id_rsa.pub -o StrictHostKeyChecking=no "{{ item }}"
+    with_items: "{{ file_info }}"

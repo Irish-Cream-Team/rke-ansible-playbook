@@ -23,5 +23,5 @@
     file_info: "{{ lookup ('file', '/tmp/init/hosts').splitlines() }}"
   tasks:
   - name:  Add SSH key to all VMs
-    command: sshpass -p "{{ password }}" ssh-copy-id -i ~/.ssh/id_rsa.pub -o StrictHostKeyChecking=no "{{ item }}"
+    command: sshpass -p "{{ password }}" ssh-copy-id -i /root/.ssh/id_rsa.pub -o StrictHostKeyChecking=no "{{ item }}"
     with_items: "{{ file_info }}"

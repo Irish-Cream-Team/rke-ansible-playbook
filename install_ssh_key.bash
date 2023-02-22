@@ -4,7 +4,7 @@
 ssh-keygen -t rsa -b 2048 -f /root/.ssh/id_rsa -q -N ""
 
 username="adminz"
-hosts_file_path="hosts"
+hosts_file_path="/tmp/init/hosts"
 password=$1
 for node in $(cat $hosts_file_path); do
     # if node as the value of [nodes] then skip

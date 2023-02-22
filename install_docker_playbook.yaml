@@ -1,6 +1,8 @@
 ---
 - hosts: nodes
   become: true
+  vars:
+    ansible_user: adminz
   tasks:
     - name: Install aptitude
       apt:

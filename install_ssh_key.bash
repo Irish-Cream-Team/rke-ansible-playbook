@@ -12,5 +12,5 @@ for node in $(cat $hosts_file_path); do
         continue
     fi
     # do cat to public key file and copy to remote host using ssh
-    cat /root/.ssh/id_rsa.pub | sshpass -p $password ssh $username@$node "mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys"
+    cat /root/.ssh/id_rsa.pub | sshpass -p $password ssh $username@$node -i /root/.ssh/id_rsa "mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys"
 done

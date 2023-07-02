@@ -1,53 +1,57 @@
 ---
-- hosts: nodes
+- name: Docker installation
+  hosts: all
   become: true
   vars:
     ansible_user: adminz
+    ubuntu_release: jammy
+    docker_version: 24.0.2-1~ubuntu.22.04~jammy
   tasks:
     - name: Install aptitude
-      apt:
+      ansible.builtin.apt:
         name: aptitude
         state: latest
         update_cache: true
-
     - name: Install required system packages
-      apt:
+      ansible.builtin.apt:
         pkg:
-        - apt-transport-https
-        - ca-certificates
-        - curl
-        - software-properties-common
-        - python3-pip
-        - virtualenv
-        - python3-setuptools
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
+          - python3-pip
+          - virtualenv
+          - python3-setuptools
         state: latest
         update_cache: true
-
     - name: Add Docker GPG apt Key
-      apt_key:
+      ansible.builtin.apt_key:
         url: https://download.docker.com/linux/ubuntu/gpg
         state: present
-
     - name: Add Docker Repository
-      apt_repository:
-        repo: deb https://download.docker.com/linux/ubuntu bionic stable
+      ansible.builtin.apt_repository:
+        repo: deb https://download.docker.com/linux/ubuntu {{ ubuntu_release }} stable
         state: present
-
     - name: Update apt and install docker-ce
-      apt:
-        name: docker-ce=18.06.3~ce~3-0~ubuntu
+      ansible.builtin.apt:
+        name: docker-ce={{ docker_version }}
         state: present
         update_cache: true
-        force: yes
-        
+        force: true
     - name: Start Docker service
-      service:
+      ansible.builtin.service:
         name: docker
         state: started
-        enabled: yes
-        
+        enabled: true
+    - name: Check Docker Started
+      ansible.builtin.systemd:
+        name: "docker"
+      register: docker_service
+    - name: Log Docker Service
+      ansible.builtin.debug:
+        msg: "Docker service is currently {{ docker_service.status.ActiveState }}"
     - name: Add adminz user to Docker group
-      user:
+      ansible.builtin.user:
         name: adminz
         groups: docker
-        append: yes
+        append: true

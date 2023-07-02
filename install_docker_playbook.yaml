@@ -3,9 +3,9 @@
   hosts: all
   become: true
   vars:
-    ansible_user: adminz
-    ubuntu_release: jammy
-    docker_version: 24.0.2-1~ubuntu.22.04~jammy
+    ansible_user: devops
+    ubuntu_release: focal
+    docker_version: 5:20.10.24~3-0~ubuntu-focal
   tasks:
     - name: Install aptitude
       ansible.builtin.apt:
@@ -32,11 +32,14 @@
       ansible.builtin.apt_repository:
         repo: deb https://download.docker.com/linux/ubuntu {{ ubuntu_release }} stable
         state: present
+        update_cache: true
     - name: Update apt and install docker-ce
       ansible.builtin.apt:
-        name: docker-ce={{ docker_version }}
+        name:
+          - docker-ce={{ docker_version }}
+          - docker-ce-cli={{ docker_version }}
+          - containerd.io
         state: present
-        update_cache: true
         force: true
     - name: Start Docker service
       ansible.builtin.service:
@@ -50,8 +53,8 @@
     - name: Log Docker Service
       ansible.builtin.debug:
         msg: "Docker service is currently {{ docker_service.status.ActiveState }}"
-    - name: Add adminz user to Docker group
+    - name: Add user to Docker group
       ansible.builtin.user:
-        name: adminz
+        name: "{{ ansible_user }}"
         groups: docker
         append: true
